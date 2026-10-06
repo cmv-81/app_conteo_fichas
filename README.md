@@ -66,12 +66,11 @@ Solo se publica `public/`. El Excel, los scripts de Python y el cartel **no** qu
 | «40 €, 3 cubatas y el resto lo que sea» | fija 3 cubatas → aparecen las formas de **completar** los 19 € que quedan |
 | «Dame 2 cervezas y 1 cubata» (sin decir dinero) | `+` `+` en cerveza, `+` en cubata → **COBRA 13 €**; cuando pague, marca el billete → **DEVUELVE** |
 | «Sin calimocho» | pulsa `−` en calimocho estando a 0 → queda fijado a 0 y no se propone |
-| Siguiente cliente | **Siguiente** (guarda la venta en la caja y limpia). **Borrar** limpia sin guardar |
+| Siguiente cliente | **Siguiente**: borra la pantalla. No se guarda ningún registro de ventas |
 
 - Todo lo que tocas con `+` / `−` o escribes queda **FIJADO**. Las opciones respetan lo fijado y completan con el resto. Para soltar un tipo, toca *FIJADO ✕*.
 - Para los importes del Excel (10, 20, 50, 100 y 200 €) las opciones son **exactamente las del cartel**.
   Para cualquier otro importe se calculan con la misma idea: nunca más fichas que dinero, no sobra dinero para otra ficha, número de fichas lo más igualado posible, menor devolución.
-- **Caja**: cuenta las ventas, el dinero cobrado y las fichas entregadas de cada tipo. Se guarda solo en ese móvil. Sirve para cuadrar la caja al cerrar.
 
 ## Pruebas
 

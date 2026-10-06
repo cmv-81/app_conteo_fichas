@@ -344,85 +344,17 @@
     pintar();
   });
 
-  // ---------- Caja (solo en este móvil) ----------
-  const CLAVE_CAJA = "fichas.caja.v1";
-  function leerCaja() {
-    try {
-      const c = JSON.parse(localStorage.getItem(CLAVE_CAJA));
-      return c && Array.isArray(c.ventas) ? c : { ventas: [] };
-    } catch (e) { return { ventas: [] }; }
-  }
-  function guardarCaja(caja) {
-    try { localStorage.setItem(CLAVE_CAJA, JSON.stringify(caja)); return true; } catch (e) { return false; }
-  }
-  function hora(ms) {
-    const d = new Date(ms);
-    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-  }
-  function pintarCaja() {
-    const { ventas } = leerCaja();
-    const dinero = ventas.reduce((s, v) => s + v.total, 0);
-    const porTipo = M.TIPOS.map((t) => ventas.reduce((s, v) => s + (v.n[t] || 0), 0));
-    $("#caja-resumen").innerHTML = `
-      <div class="caja-dato"><span class="lbl">Ventas</span><div class="caja-num"><b>${ventas.length}</b></div></div>
-      <div class="caja-dato"><span class="lbl">Cobrado</span><div class="caja-num"><b>${fmt(dinero)}</b></div></div>
-      ${M.TIPOS.map((t) => `<div class="caja-dato"><span class="lbl">Fichas ${NOMBRES[t]}</span>
-        <div class="caja-num">${fichaHTML(t, true)}<b>${porTipo[t]}</b></div></div>`).join("")}`;
-    $("#caja-lista").innerHTML = ventas.slice(-15).reverse().map((v) => {
-      const partes = M.TIPOS.filter((t) => v.n[t] > 0).map((t) => `${v.n[t]}×${etiquetaValor(t)}`).join(" + ");
-      return `<li><span>${hora(v.t)}</span><span>${partes}</span><b>${fmt(v.total)}</b></li>`;
-    }).join("");
-    $("#btn-deshacer").disabled = ventas.length === 0;
-    const avisos = CARTEL.avisos.length ? `<br>⚠ ${CARTEL.avisos.join("<br>⚠ ")}` : "";
-    $("#caja-info").innerHTML =
-      `La caja se guarda solo en este móvil. Fichas: ${M.TIPOS.map((t) => `${NOMBRES[t]} ${etiquetaValor(t)}`).join(" · ")}.` +
-      `<br>Datos del Excel del ${D.generado || "—"}.${avisos}`;
-  }
-  $("#btn-caja").addEventListener("click", () => {
-    pintarCaja();
-    $("#hoja-caja").hidden = false;
-  });
-  $("#btn-deshacer").addEventListener("click", () => {
-    const caja = leerCaja();
-    const ultima = caja.ventas.pop();
-    if (!ultima) return;
-    if (!confirm(`¿Deshacer la última venta de ${fmt(ultima.total)} (${hora(ultima.t)})?`)) return;
-    guardarCaja(caja);
-    pintarCaja();
-  });
-  $("#btn-caja-cero").addEventListener("click", () => {
-    if (!confirm("¿Poner la caja a cero? Se borrarán todas las ventas guardadas en este móvil.")) return;
-    guardarCaja({ ventas: [] });
-    pintarCaja();
-  });
+  // ---------- Siguiente cliente: se borra todo y listo ----------
+  // No se guarda ningún registro de ventas en el móvil.
+  try { localStorage.removeItem("fichas.caja.v1"); } catch (e) { /* versiones antiguas guardaban la caja */ }
 
-  // ---------- Siguiente cliente / borrar ----------
-  function reiniciar() {
+  $("#btn-siguiente").addEventListener("click", () => {
     estado.recibido = 0;
     estado.n = [0, 0, 0];
     estado.fijo = [false, false, false];
+    vibrar(15);
     pintar();
     window.scrollTo(0, 0);
-  }
-  $("#btn-siguiente").addEventListener("click", () => {
-    const total = totalPedido();
-    if (total > 0) {
-      const recibido = estado.recibido || total;
-      if (recibido < total) {
-        vibrar(80);
-        return aviso(`Faltan ${fmt(total - recibido)}`);
-      }
-      const caja = leerCaja();
-      caja.ventas.push({ t: Date.now(), recibido, total, n: estado.n.slice() });
-      if (caja.ventas.length > 5000) caja.ventas.shift();
-      aviso(guardarCaja(caja) ? `✓ Venta de ${fmt(total)} guardada` : "✓ Listo (no se pudo guardar la caja)");
-    }
-    vibrar(15);
-    reiniciar();
-  });
-  $("#btn-borrar").addEventListener("click", () => {
-    vibrar();
-    reiniciar();
   });
 
   // ---------- Funcionar sin conexión ----------

@@ -78,11 +78,6 @@ h2, h3 { margin: 0; }
 .marca-fichas i:nth-child(1) { background: var(--c0, #F4511E); }
 .marca-fichas i:nth-child(2) { background: var(--c1, #29A9F0); }
 .marca-fichas i:nth-child(3) { background: var(--c2, #F5A400); }
-.btn-cabecera {
-  min-height: 40px; padding: 0 14px; border-radius: 10px;
-  background: rgba(255, 255, 255, .12); color: #fff; font-weight: 700; font-size: 15px;
-}
-.btn-cabecera:active { background: rgba(255, 255, 255, .25); }
 
 /* ---------- Contenido ---------- */
 .contenido {
@@ -226,7 +221,7 @@ h2, h3 { margin: 0; }
 }
 .aviso[hidden] { display: none; }
 
-/* ---------- Hojas (teclado y caja) ---------- */
+/* ---------- Hoja del teclado ---------- */
 .hoja { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; justify-content: flex-end; }
 .hoja[hidden] { display: none; }
 .hoja-fondo { position: absolute; inset: 0; background: rgba(4, 18, 21, .55); }
@@ -238,7 +233,6 @@ h2, h3 { margin: 0; }
   padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
   animation: subir .16s ease-out;
 }
-.hoja-alta { max-height: 88vh; overflow-y: auto; }
 @keyframes subir { from { transform: translateY(32px); } }
 @media (prefers-reduced-motion: reduce) { .hoja-panel { animation: none; } }
 
@@ -255,29 +249,13 @@ h2, h3 { margin: 0; }
 }
 .teclado button:active { background: var(--boton-activo); }
 .teclado .tecla-sec { font-size: 22px; color: var(--suave); }
-.teclado-acciones, .caja-acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
-.btn-pri, .btn-sec, .btn-peligro {
+.teclado-acciones { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.btn-pri, .btn-sec {
   min-height: 56px; border-radius: 12px; font-size: 17px; font-weight: 800;
 }
 .btn-pri { background: var(--primario); color: var(--primario-texto); }
 .btn-sec { background: var(--boton); }
-.btn-peligro { background: transparent; color: var(--mal); border: 2px solid var(--mal); }
-.btn-pri:active, .btn-sec:active, .btn-peligro:active { transform: scale(.98); }
-
-.hoja-cab { display: flex; align-items: center; margin-bottom: 12px; }
-.hoja-cab h2 { flex: 1; font-size: 20px; font-weight: 900; }
-.btn-cerrar { width: 44px; height: 44px; border-radius: 12px; background: var(--boton); font-size: 18px; }
-.caja-resumen { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 16px; }
-.caja-dato { background: var(--fondo); border-radius: 12px; padding: 10px 12px; }
-.caja-dato .lbl { display: block; font-size: 12px; font-weight: 800; color: var(--suave); text-transform: uppercase; letter-spacing: .05em; }
-.caja-num { display: flex; align-items: center; gap: 8px; margin-top: 2px; }
-.caja-num b { font-size: 26px; font-weight: 900; }
-.caja-lista { list-style: none; margin: 0; padding: 0; font-size: 15px; }
-.caja-lista li { padding: 8px 0; border-bottom: 1px solid var(--linea); display: flex; gap: 8px; }
-.caja-lista li span:first-child { color: var(--suave); }
-.caja-lista li b { margin-left: auto; }
-.caja-lista:empty::before { content: "Todavía no hay ventas."; color: var(--suave); }
-.caja-info { font-size: 12px; color: var(--suave); margin: 16px 0 0; line-height: 1.5; }
+.btn-pri:active, .btn-sec:active { transform: scale(.98); }
 
 @media (min-width: 420px) {
   .resultado-principal { font-size: 36px; }

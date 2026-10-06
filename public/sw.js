@@ -3,7 +3,7 @@
  * Estrategia "primero red": con conexión siempre se usan los datos más nuevos
  * (por ejemplo, un datos.js recién exportado); sin conexión, la copia guardada.
  */
-const CACHE = "fichas-v1";
+const CACHE = "fichas-v2";
 const ARCHIVOS = [
   "./",
   "index.html",
