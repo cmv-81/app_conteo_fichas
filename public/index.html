@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Cambio de fichas</title>
+  <meta name="description" content="Calculadora rápida para el puesto de cambio de dinero a fichas del festival.">
+  <meta name="theme-color" content="#0B2D33">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Fichas">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="iconos/icono-192.png" type="image/png">
+  <link rel="apple-touch-icon" href="iconos/icono-180.png">
+  <link rel="stylesheet" href="estilos.css">
+</head>
+<body>
+  <header class="cabecera">
+    <div class="marca" aria-hidden="true">
+      <span class="marca-fichas"><i></i><i></i><i></i></span>
+      <span>Fichas</span>
+    </div>
+    <button class="btn-cabecera" id="btn-caja" type="button">Caja</button>
+    <button class="btn-cabecera" id="btn-borrar" type="button">Borrar</button>
+  </header>
+
+  <main class="contenido">
+    <section class="tarjeta" aria-labelledby="t-recibido">
+      <h2 class="etiqueta" id="t-recibido">Dinero recibido</h2>
+      <div class="importe-fila">
+        <button class="importe" id="importe" type="button" aria-label="Dinero recibido. Toca para escribirlo">
+          <span id="importe-valor">0 €</span>
+          <span class="importe-pista" id="importe-pista">toca para escribir</span>
+        </button>
+        <button class="btn-limpiar" id="btn-limpiar-importe" type="button" aria-label="Poner el dinero recibido a cero">✕</button>
+      </div>
+      <div class="billetes" id="billetes"></div>
+    </section>
+
+    <section class="tarjeta" aria-labelledby="t-pedido">
+      <h2 class="etiqueta" id="t-pedido">Fichas a entregar</h2>
+      <div id="filas-fichas"></div>
+    </section>
+
+    <section class="opciones" aria-labelledby="t-opciones">
+      <h2 class="etiqueta" id="t-opciones">Opciones</h2>
+      <p class="pista" id="pista-opciones"></p>
+      <div id="lista-opciones" class="lista-opciones"></div>
+    </section>
+  </main>
+
+  <footer class="resultado" id="resultado" data-tipo="vacio">
+    <div class="resultado-texto" aria-live="polite">
+      <div class="resultado-principal" id="resultado-principal">Marca el dinero</div>
+      <div class="resultado-detalle" id="resultado-detalle">o las fichas que pide</div>
+    </div>
+    <button class="btn-siguiente" id="btn-siguiente" type="button">Siguiente<span aria-hidden="true"> ›</span></button>
+  </footer>
+
+  <div class="aviso" id="aviso" role="status" hidden></div>
+
+  <!-- Teclado numérico -->
+  <div class="hoja" id="hoja-teclado" hidden>
+    <div class="hoja-fondo" data-cerrar></div>
+    <div class="hoja-panel" role="dialog" aria-modal="true" aria-labelledby="teclado-titulo">
+      <div class="teclado-titulo" id="teclado-titulo">Dinero recibido</div>
+      <div class="teclado-pantalla" id="teclado-pantalla">0</div>
+      <div class="teclado">
+        <button type="button" data-tecla="1">1</button>
+        <button type="button" data-tecla="2">2</button>
+        <button type="button" data-tecla="3">3</button>
+        <button type="button" data-tecla="4">4</button>
+        <button type="button" data-tecla="5">5</button>
+        <button type="button" data-tecla="6">6</button>
+        <button type="button" data-tecla="7">7</button>
+        <button type="button" data-tecla="8">8</button>
+        <button type="button" data-tecla="9">9</button>
+        <button type="button" data-tecla="C" class="tecla-sec" aria-label="Borrar todo">C</button>
+        <button type="button" data-tecla="0">0</button>
+        <button type="button" data-tecla="B" class="tecla-sec" aria-label="Borrar último número">⌫</button>
+      </div>
+      <div class="teclado-acciones">
+        <button type="button" class="btn-sec" data-cerrar>Cancelar</button>
+        <button type="button" class="btn-pri" id="teclado-ok">Aceptar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Caja -->
+  <div class="hoja" id="hoja-caja" hidden>
+    <div class="hoja-fondo" data-cerrar></div>
+    <div class="hoja-panel hoja-alta" role="dialog" aria-modal="true" aria-labelledby="caja-titulo">
+      <div class="hoja-cab">
+        <h2 id="caja-titulo">Caja de este móvil</h2>
+        <button type="button" class="btn-cerrar" data-cerrar aria-label="Cerrar">✕</button>
+      </div>
+      <div class="caja-resumen" id="caja-resumen"></div>
+      <h3 class="etiqueta">Últimas ventas</h3>
+      <ol class="caja-lista" id="caja-lista"></ol>
+      <div class="caja-acciones">
+        <button type="button" class="btn-sec" id="btn-deshacer">Deshacer última</button>
+        <button type="button" class="btn-peligro" id="btn-caja-cero">Poner caja a cero</button>
+      </div>
+      <p class="caja-info" id="caja-info"></p>
+    </div>
+  </div>
+
+  <script src="datos.js"></script>
+  <script src="motor.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

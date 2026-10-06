@@ -1,0 +1,13 @@
+{
+  "name": "cambio-fichas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Calculadora móvil para el puesto de cambio de dinero a fichas del festival.",
+  "scripts": {
+    "dev": "node servidor-local.js",
+    "test": "node pruebas/motor.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
