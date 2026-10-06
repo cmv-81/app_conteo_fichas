@@ -23,17 +23,21 @@
   const BILLETES = [5, 10, 20, 50, 100];
   const MAX_IMPORTE = 2000; // €
   const MAX_FICHAS = 999;
+  const PRECIO_VASO = M.aCentimos(D.vaso ? D.vaso.precio : 1);
+  const MAX_VASOS = 99;
 
   COLORES.forEach((c, t) => document.documentElement.style.setProperty(`--c${t}`, c));
 
   // ---------- Estado ----------
-  const estado = { recibido: 0, n: [0, 0, 0], fijo: [false, false, false] };
+  const estado = { recibido: 0, n: [0, 0, 0], fijo: [false, false, false], vasos: 0 };
   let opcionesActuales = [];
 
   const fmt = M.formatear;
   const etiquetaValor = (t) => fmt(VALORES[t]).replace(" ", "");
-  const totalPedido = () => M.totalDe(estado.n, VALORES);
+  const totalFichas = () => M.totalDe(estado.n, VALORES);
+  const totalPedido = () => totalFichas() + M.totalVasos(estado, PRECIO_VASO); // fichas + vasos
   const numFichas = (n) => n.reduce((a, b) => a + b, 0);
+  const vasosTexto = (v) => `${v} vaso${v === 1 ? "" : "s"}`;
 
   function fichaHTML(t, mini) {
     return `<span class="ficha${mini ? " mini" : ""}" style="--c:${COLORES[t]}">${etiquetaValor(t)}</span>`;
@@ -131,6 +135,35 @@
     filas.push(fila);
   });
 
+  // Fila del vaso: se suma al total. No es una ficha, así que nunca se "fija".
+  const filaVaso = document.createElement("div");
+  filaVaso.className = "fila-ficha fila-vaso";
+  filaVaso.innerHTML = `
+    <svg class="vaso-icono" viewBox="0 0 40 40" aria-hidden="true">
+      <path d="M7 6h26l-3.4 28.6A3 3 0 0 1 26.6 37H13.4a3 3 0 0 1-3-2.4z" fill="#EAF1F3" stroke="#121212" stroke-width="2.6" stroke-linejoin="round"/>
+      <path d="M8.3 12.5h23.4" stroke="#121212" stroke-width="2"/>
+      <text x="20" y="27.5" text-anchor="middle" font-size="11" font-weight="900" fill="#07161A">${fmt(PRECIO_VASO).replace(" ", "")}</text>
+    </svg>
+    <span class="fila-nombre"><b>Vaso</b><span class="fila-precio">${fmt(PRECIO_VASO)} cada uno</span></span>
+    <button type="button" class="paso" aria-label="Un vaso menos">−</button>
+    <button type="button" class="cantidad" aria-label="Escribir número de vasos">0</button>
+    <button type="button" class="paso" aria-label="Un vaso más">+</button>`;
+  {
+    const [menos, mas] = filaVaso.querySelectorAll(".paso");
+    botonRepetible(menos, () => cambiarVasos(-1));
+    botonRepetible(mas, () => cambiarVasos(+1));
+    filaVaso.querySelector(".cantidad").addEventListener("click", () => abrirTeclado("vaso"));
+  }
+  contFilas.appendChild(filaVaso);
+
+  function cambiarVasos(delta) {
+    const nuevo = Math.min(MAX_VASOS, Math.max(0, estado.vasos + delta));
+    if (nuevo === estado.vasos) return;
+    estado.vasos = nuevo;
+    vibrar();
+    pintar();
+  }
+
   function cambiarCantidad(t, delta) {
     const nuevo = Math.min(MAX_FICHAS, Math.max(0, estado.n[t] + delta));
     if (nuevo === estado.n[t] && estado.fijo[t]) return;
@@ -153,6 +186,8 @@
       fila.classList.toggle("fijada", estado.fijo[t]);
       fila.classList.toggle("vacia", estado.n[t] === 0);
     });
+    filaVaso.querySelector(".cantidad").textContent = estado.vasos;
+    filaVaso.classList.toggle("vacia", estado.vasos === 0);
 
     pintarOpciones();
     pintarResultado();
@@ -165,7 +200,7 @@
   }
 
   function pintarOpciones() {
-    const res = M.calcularOpciones(estado, VALORES, CARTEL.mapa);
+    const res = M.calcularOpciones(estado, VALORES, CARTEL.mapa, PRECIO_VASO);
     opcionesActuales = res.opciones;
     const titulo = $("#t-opciones");
     const pista = $("#pista-opciones");
@@ -180,17 +215,30 @@
       return;
     }
 
-    const A = fmt(estado.recibido);
+    if (res.modo === "solo-vasos") {
+      titulo.textContent = "Opciones";
+      pista.textContent = res.paraFichas < 0
+        ? "Con ese dinero no llega ni para los vasos."
+        : "Ese dinero es justo lo de los vasos: no queda para fichas.";
+      lista.innerHTML = "";
+      return;
+    }
+
+    // Con vasos, las fichas se calculan con lo que queda después de pagarlos.
+    const A = fmt(res.paraFichas);
+    const notaVasos = estado.vasos
+      ? `Recibido ${fmt(estado.recibido)} − ${vasosTexto(estado.vasos)} (${fmt(M.totalVasos(estado, PRECIO_VASO))}) = ${A} para fichas.`
+      : "";
     if (res.modo === "libre") {
       const delCartel = res.opciones.some((o) => o.origen === "cartel");
       titulo.textContent = `Combinaciones para ${A}${delCartel ? " · como el cartel" : ""}`;
-      pista.textContent = "Toca una opción. Para fijar fichas, usa + / − arriba.";
+      pista.textContent = notaVasos || "Toca una opción. Para fijar fichas, usa + / − arriba.";
     } else if (res.modo === "completar") {
       titulo.textContent = `Quedan ${fmt(res.resto)} para completar`;
-      pista.textContent = res.opciones.length ? "" : "No queda dinero para más fichas.";
+      pista.textContent = res.opciones.length ? notaVasos : "No queda dinero para más fichas.";
     } else {
       titulo.textContent = `Con ${A} le llega para`;
-      pista.textContent = res.opciones.length ? "" : "Con ese dinero no llega para lo fijado.";
+      pista.textContent = res.opciones.length ? notaVasos : "Con ese dinero no llega para lo fijado.";
     }
 
     const grupos = (op) => op.tipos
@@ -233,7 +281,10 @@
     const detalle = $("#resultado-detalle");
     const total = totalPedido();
     const fichas = numFichas(estado.n);
-    const resumen = `${fichas} ficha${fichas === 1 ? "" : "s"} · ${fmt(total)}`;
+    const partes = [];
+    if (fichas > 0 || estado.vasos === 0) partes.push(`${fichas} ficha${fichas === 1 ? "" : "s"}`);
+    if (estado.vasos > 0) partes.push(vasosTexto(estado.vasos));
+    const resumen = `${partes.join(" + ")} · ${fmt(total)}`;
     const A = estado.recibido;
 
     let tipo, texto, sub;
@@ -275,13 +326,17 @@
     teclado.texto = "";
     $("#teclado-titulo").textContent = destino === "importe"
       ? "Dinero recibido (€)"
-      : `Fichas de ${NOMBRES[destino]} (${etiquetaValor(destino)})`;
+      : destino === "vaso"
+        ? `Vasos (${fmt(PRECIO_VASO)} cada uno)`
+        : `Fichas de ${NOMBRES[destino]} (${etiquetaValor(destino)})`;
     pintarTeclado();
     hojaTeclado.hidden = false;
     $("#teclado-ok").focus({ preventScroll: true });
   }
   function valorActualTeclado() {
-    return teclado.destino === "importe" ? estado.recibido / 100 : estado.n[teclado.destino];
+    if (teclado.destino === "importe") return estado.recibido / 100;
+    if (teclado.destino === "vaso") return estado.vasos;
+    return estado.n[teclado.destino];
   }
   function pintarTeclado() {
     const pantalla = $("#teclado-pantalla");
@@ -291,7 +346,7 @@
     pantalla.textContent = teclado.destino === "importe" ? `${valor} €` : String(valor);
   }
   function pulsarTecla(k) {
-    const max = teclado.destino === "importe" ? MAX_IMPORTE : MAX_FICHAS;
+    const max = teclado.destino === "importe" ? MAX_IMPORTE : teclado.destino === "vaso" ? MAX_VASOS : MAX_FICHAS;
     if (k === "C") teclado.texto = "";
     else if (k === "B") teclado.texto = teclado.texto.slice(0, -1);
     else {
@@ -306,11 +361,12 @@
     if (teclado.texto !== "") {
       const v = Number(teclado.texto);
       if (teclado.destino === "importe") estado.recibido = v * 100;
+      else if (teclado.destino === "vaso") estado.vasos = v;
       else {
         estado.n[teclado.destino] = v;
         estado.fijo[teclado.destino] = true;
       }
-    } else if (teclado.destino !== "importe") {
+    } else if (typeof teclado.destino === "number") {
       estado.fijo[teclado.destino] = true; // aceptar sin escribir = fijar la cantidad actual
     }
     cerrarHojas();
@@ -352,6 +408,7 @@
     estado.recibido = 0;
     estado.n = [0, 0, 0];
     estado.fijo = [false, false, false];
+    estado.vasos = 0;
     vibrar(15);
     pintar();
     window.scrollTo(0, 0);

@@ -65,10 +65,13 @@ Solo se publica `public/`. El Excel, los scripts de Python y el cartel **no** qu
 | «40 €, pero 7 cubatas sí o sí» | `+20 +20` → toca el número de Cubata, escribe `7` → sale **FALTAN 9 €** y lo que le llega con 40 € |
 | «40 €, 3 cubatas y el resto lo que sea» | fija 3 cubatas → aparecen las formas de **completar** los 19 € que quedan |
 | «Dame 2 cervezas y 1 cubata» (sin decir dinero) | `+` `+` en cerveza, `+` en cubata → **COBRA 13 €**; cuando pague, marca el billete → **DEVUELVE** |
+| «Te doy 52 € y quiero 2 vasos» | toca la cifra del dinero y escribe 52, luego `+` dos veces en **Vaso** → las combinaciones salen para los 50 € que quedan |
+| «Solo un vaso» | marca el dinero y `+` en **Vaso** → **DEVUELVE** |
 | «Sin calimocho» | pulsa `−` en calimocho estando a 0 → queda fijado a 0 y no se propone |
 | Siguiente cliente | **Siguiente**: borra la pantalla. No se guarda ningún registro de ventas |
 
 - Todo lo que tocas con `+` / `−` o escribes queda **FIJADO**. Las opciones respetan lo fijado y completan con el resto. Para soltar un tipo, toca *FIJADO ✕*.
+- **Vasos**: cada vaso suma su precio (1 €, se cambia en el Excel, hoja CONFIGURACIÓN, celda B23). Primero se descuentan los vasos y las fichas se calculan con lo que queda.
 - Para los importes del Excel (10, 20, 50, 100 y 200 €) las opciones son **exactamente las del cartel**.
   Para cualquier otro importe se calculan con la misma idea: nunca más fichas que dinero, no sobra dinero para otra ficha, número de fichas lo más igualado posible, menor devolución.
 

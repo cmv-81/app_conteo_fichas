@@ -135,17 +135,26 @@
     return { mapa, avisos };
   }
 
+  /** Lo que cuestan los vasos pedidos, en céntimos. */
+  function totalVasos(estado, precioVaso) {
+    return (estado.vasos || 0) * (precioVaso || 0);
+  }
+
   /**
    * Opciones a mostrar para el estado actual.
-   *   estado = { recibido: céntimos, n: [3], fijo: [3 booleanos] }
-   * Devuelve { modo, resto, opciones: [...] }
-   *   modo: "sin-dinero" | "libre" | "completar" | "excede"
+   *   estado = { recibido: céntimos, n: [3], fijo: [3 booleanos], vasos: nº de vasos }
+   *   precioVaso: céntimos por vaso. Los vasos se pagan primero; las fichas se
+   *   calculan con el dinero que queda (52 € con 2 vasos de 1 € → opciones de 50 €).
+   * Devuelve { modo, resto, paraFichas, opciones: [...] }
+   *   modo: "sin-dinero" | "solo-vasos" | "libre" | "completar" | "excede"
+   *   paraFichas: céntimos disponibles para fichas (recibido − vasos)
    *   opción: { tipos, n:[3] (pedido completo), anadido:[3], dev, origen, imposible }
    *     origen: "cartel" (valor del Excel) | "calculo" | "nada"
    */
-  function calcularOpciones(estado, valores, cartel) {
-    const A = estado.recibido;
-    if (!(A > 0)) return { modo: "sin-dinero", resto: 0, opciones: [] };
+  function calcularOpciones(estado, valores, cartel, precioVaso) {
+    if (!(estado.recibido > 0)) return { modo: "sin-dinero", resto: 0, paraFichas: 0, opciones: [] };
+    const A = estado.recibido - totalVasos(estado, precioVaso);
+    if (A <= 0) return { modo: "solo-vasos", resto: A, paraFichas: A, opciones: [] };
 
     const fijos = TIPOS.filter((t) => estado.fijo[t]);
     const libres = TIPOS.filter((t) => !estado.fijo[t]);
@@ -163,7 +172,7 @@
         if (!r) return { tipos, imposible: true, origen: "calculo" };
         return { tipos, n: r.n, anadido: r.n.slice(), dev: r.dev, origen: "calculo" };
       });
-      return { modo: "libre", resto: A, opciones };
+      return { modo: "libre", resto: A, paraFichas: A, opciones };
     }
 
     // 2) Lo fijado ya supera lo recibido: alternativas que respetan los tipos pedidos.
@@ -177,7 +186,7 @@
         const r = mejorReparto(A, tipos, valores);
         if (r) opciones.push({ tipos, n: r.n, anadido: r.n.slice(), dev: r.dev, origen: "calculo" });
       }
-      return { modo: "excede", resto: A - totalFijo, opciones };
+      return { modo: "excede", resto: A - totalFijo, paraFichas: A, opciones };
     }
 
     // 3) Completar lo fijado con los tipos libres.
@@ -198,7 +207,7 @@
         origen: "calculo",
       });
     }
-    return { modo: "completar", resto, opciones };
+    return { modo: "completar", resto, paraFichas: A, opciones };
   }
 
   /** "48 €" o "2,50 €" */
@@ -214,6 +223,7 @@
     SUBCONJUNTOS,
     aCentimos,
     totalDe,
+    totalVasos,
     mejorReparto,
     prepararCartel,
     calcularOpciones,

@@ -99,6 +99,21 @@ ok(tres.n.join() === "3,4,3" && tres.dev === 0, "50€ las tres: 3+4+3 exacto �
 
 ok(M.formatear(4800) === "48 €" && M.formatear(250) === "2,50 €" && M.formatear(-900) === "-9 €", "formato de euros");
 
+// ---------- 3b. Vasos ----------
+const VASO = M.aCentimos(D.vaso ? D.vaso.precio : 1);
+ok(VASO === 100, "precio del vaso exportado del Excel = 1 €");
+r = M.calcularOpciones({ recibido: 5200, n: [0, 0, 0], fijo: [false, false, false], vasos: 2 }, valores, mapa, VASO);
+ok(r.modo === "libre" && r.paraFichas === 5000, "52 € con 2 vasos → 50 € para fichas");
+ok(r.opciones[3].origen === "cartel" && r.opciones[3].n.join() === "6,6,0" && r.opciones[3].dev === 200,
+  "52 € con 2 vasos → mismas opciones que el cartel de 50 € (6+6, devuelve 2 €)");
+r = M.calcularOpciones({ recibido: 5000, n: [0, 0, 0], fijo: [false, false, false], vasos: 1 }, valores, mapa, VASO);
+ok(r.paraFichas === 4900 && r.opciones.every((o) => o.imposible || o.origen === "calculo"), "50 € con 1 vaso → 49 € calculados");
+ok(r.opciones[0].n[0] === 16 && r.opciones[0].dev === 100, "49 €: 16 cervezas, devuelve 1 €");
+r = M.calcularOpciones({ recibido: 200, n: [0, 0, 0], fijo: [false, false, false], vasos: 2 }, valores, mapa, VASO);
+ok(r.modo === "solo-vasos" && r.opciones.length === 0, "2 € con 2 vasos → solo vasos, sin fichas");
+r = M.calcularOpciones({ recibido: 1000, n: [0, 0, 2], fijo: [false, false, true], vasos: 1 }, valores, mapa, VASO);
+ok(r.modo === "excede" && r.resto === -500, "10 € con 2 cubatas y 1 vaso → faltan 5 €");
+
 // ---------- 4. Invariantes con estados aleatorios ----------
 let semilla = 12345;
 const azar = (n) => { semilla = (semilla * 1103515245 + 12345) % 2147483648; return semilla % n; };
@@ -106,11 +121,14 @@ for (let i = 0; i < 20000; i++) {
   const A = azar(4) === 0 ? 0 : (1 + azar(250)) * 100;
   const fijo = [azar(3) === 0, azar(3) === 0, azar(3) === 0];
   const n = fijo.map((f) => (f ? azar(12) : 0));
-  const res = M.calcularOpciones({ recibido: A, n, fijo }, valores, mapa);
+  const vasos = azar(3) === 0 ? azar(4) : 0;
+  const res = M.calcularOpciones({ recibido: A, n, fijo, vasos }, valores, mapa, VASO);
+  ok(A === 0 || res.paraFichas === A - vasos * VASO, "dinero para fichas = recibido − vasos");
   for (const o of res.opciones) {
     if (o.imposible) continue;
     const total = M.totalDe(o.n, valores);
-    ok(Number.isInteger(total) && o.dev === A - total && o.dev >= 0, `cuenta ${A} ${n} ${fijo} → ${JSON.stringify(o)}`);
+    ok(Number.isInteger(total) && o.dev === A - vasos * VASO - total && o.dev >= 0,
+      `cuenta ${A} ${n} ${fijo} vasos ${vasos} → ${JSON.stringify(o)}`);
     ok(o.n.every((x) => Number.isInteger(x) && x >= 0), "cantidades enteras");
     if (res.modo === "completar") ok([0, 1, 2].every((t) => !fijo[t] || o.n[t] === n[t]), "respeta lo fijado");
     if (res.modo === "excede") {

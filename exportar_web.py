@@ -15,7 +15,9 @@ import sys
 from datetime import datetime
 from pathlib import Path
 
-from generador_cartel_fichas import ErrorExcel, casillas_a_revisar, leer_excel
+import openpyxl
+
+from generador_cartel_fichas import HOJA_DATOS, ErrorExcel, casillas_a_revisar, leer_excel
 
 BASE = Path(__file__).resolve().parent
 SALIDA = BASE / "public" / "datos.js"
@@ -29,8 +31,23 @@ def numero(v):
     return None
 
 
+def leer_precio_vaso(excel_path):
+    """Clave 'vaso_precio' de DATOS_PYTHON. Si el Excel es antiguo y no la tiene, 1 €."""
+    ws = openpyxl.load_workbook(excel_path, data_only=True)[HOJA_DATOS]
+    for r in range(5, ws.max_row + 1):
+        if ws.cell(r, 1).value is None:
+            break
+        if str(ws.cell(r, 1).value).strip() == "vaso_precio":
+            precio = numero(ws.cell(r, 2).value)
+            if precio is None or precio < 0:
+                raise ErrorExcel("El precio del vaso del Excel no es válido (CONFIGURACIÓN, celda B23).")
+            return precio
+    return 1
+
+
 def exportar(excel_path):
     valores, bebidas, colores, importes, tabla, _ = leer_excel(excel_path)
+    precio_vaso = leer_precio_vaso(excel_path)
 
     revisar = casillas_a_revisar(tabla, importes)
     if revisar:
@@ -47,6 +64,7 @@ def exportar(excel_path):
             {"valor": numero(v), "nombre": b, "color": c}
             for v, b, c in zip(valores, bebidas, colores)
         ],
+        "vaso": {"precio": precio_vaso},
         "cartel": [
             {
                 "importe": numero(importe),
@@ -88,4 +106,5 @@ if __name__ == "__main__":
     fichas = ", ".join(f"{f['nombre']} {f['valor']}€" for f in datos["fichas"])
     print(f"Web actualizada: {SALIDA}")
     print(f"  Fichas: {fichas}")
+    print(f"  Vaso: {datos['vaso']['precio']}€")
     print(f"  Importes del cartel: {', '.join(str(c['importe']) + '€' for c in datos['cartel'])}")

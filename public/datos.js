@@ -1,6 +1,6 @@
 // Generado automáticamente por exportar_web.py a partir de plantilla_cambio_fichas.xlsx. NO EDITAR A MANO.
 window.FICHAS_DATOS = {
- "generado": "2026-10-06 21:12",
+ "generado": "2026-10-06 21:50",
  "excel": "plantilla_cambio_fichas.xlsx",
  "fichas": [
   {
@@ -19,6 +19,9 @@ window.FICHAS_DATOS = {
    "color": "#F5A400"
   }
  ],
+ "vaso": {
+  "precio": 1
+ },
  "cartel": [
   {
    "importe": 10,
